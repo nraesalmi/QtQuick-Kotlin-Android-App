@@ -31,8 +31,8 @@ Qt Quick application, uses QML for frontend & Kotlin backend
 I started out by researching Qt Quick and its integration with Android Studio. I read the tutorial https://doc.qt.io/qt-6/qtquick-for-android.html on how to integrate the Qt Quick tool into the IDE.
 
 Next I went to https://www.openbrewerydb.org/documentation to study how the API works. To fetch the correct pubs using curl I got the calls: 
-- Most northern pub in Ireland using `by_dist`: `curl -X GET "https://api.openbrewerydb.org/v1/breweries?by_dist=55.380920,-7.373415&per_page=3"` 
-- Most southern pub in Ireland using `by_dist`: `curl -X GET "https://api.openbrewerydb.org/v1/breweries?by_dist=51.461818,-9.417598&per_page=3"` is used.
-- Pub with the longest name cannot be fetched with a single API call, as `curl -X GET https://api.openbrewerydb.org/v1/breweries/meta?by_country=ireland` returns {"total":"70","page":"1","per_page":"50"}, so two calls need to be made:
+- Most northern pub in Ireland using `by_dist`: `curl -X GET "https://api.openbrewerydb.org/v1/breweries?by_dist=55.380920,-7.373415&per_page=1"` 
+- Most southern pub in Ireland using `by_dist`: `curl -X GET "https://api.openbrewerydb.org/v1/breweries?by_dist=51.461818,-9.417598&per_page=1"` is used.
+- Pub with the longest name cannot be fetched with a single API call, as `curl -X GET https://api.openbrewerydb.org/v1/breweries/meta?by_country=ireland` returns `{"total":"70","page":"1","per_page":"50"}`, so two calls need to be made:
     - `curl -X GET "https://api.openbrewerydb.org/v1/breweries?by_country=Ireland&per_page=50&page=1"`
     - `curl -X GET "https://api.openbrewerydb.org/v1/breweries?by_country=Ireland&per_page=50&page=2"`
