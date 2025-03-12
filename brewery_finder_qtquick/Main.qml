@@ -7,12 +7,12 @@ Rectangle {
     width: parent.width
     height: parent.height
     visible: true
-    color: "black"
+    color: "white"
 
     Text {
         id: helloText
         color: "white"
-        text: qsTr("Hello World from QML")
+        text: qsTr("")
         anchors.centerIn: parent
     }
 }

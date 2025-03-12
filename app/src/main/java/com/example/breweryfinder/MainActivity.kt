@@ -1,27 +1,21 @@
 package com.example.breweryfinder
 
-import android.content.ContentValues.TAG
-import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
-import com.google.android.material.snackbar.Snackbar
-import androidx.appcompat.app.AppCompatActivity
-import androidx.navigation.findNavController
-import androidx.navigation.ui.AppBarConfiguration
-import androidx.navigation.ui.navigateUp
-import androidx.navigation.ui.setupActionBarWithNavController
 import android.view.Menu
 import android.view.MenuItem
 import android.view.ViewGroup
 import android.widget.FrameLayout
-import androidx.lifecycle.ReportFragment.Companion.reportFragment
+import androidx.appcompat.app.AppCompatActivity
 import com.example.breweryfinder.databinding.ActivityMainBinding
+import com.google.gson.Gson
 import org.qtproject.example.brewery_finder_qtquickApp.Brewery_finder_qtquick.Main
 import org.qtproject.qt.android.QtQuickView
+import java.io.InputStreamReader
 import java.net.URL
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import javax.net.ssl.HttpsURLConnection
-import org.qtproject.qt.android.QtQmlStatus
-import org.qtproject.qt.android.QtQmlStatusChangeListener
 
 
 class MainActivity : AppCompatActivity() {
@@ -45,7 +39,7 @@ class MainActivity : AppCompatActivity() {
         // Set status change listener for m_qmlView
         // listener implemented below in OnStatusChanged
         //! [setStatusChangeListener]
-        // mainQmlContent.setStatusChangeListener(this)
+        //mainQmlContent.setStatusChangeListener(this)
 
         //! [layoutParams]
         val params: ViewGroup.LayoutParams = FrameLayout.LayoutParams(
@@ -57,10 +51,39 @@ class MainActivity : AppCompatActivity() {
         //! [loadContent]
         qtQuickView!!.loadContent(mainQmlContent)
         //! [loadContent]
-
+        fetchNorthernPub().start()
     }
 
+/*
+    //! [onStatusChanged]
+    override fun onStatusChanged(status: QtQmlStatus?) {
+        Log.v(TAG, "Status of QtQuickView: $status")
 
+
+        val qmlStatus = (resources.getString(R.string.qml_view_status)
+                + m_statusNames[status])
+
+        // Show current QML View status in a textview
+        binding.qmlStatusText.text = qmlStatus
+
+        // Connect signal listener to "onClicked" signal from main.qml
+        // addSignalListener returns int which can be used later to identify the listener
+        //! [qml signal listener]
+        if (status == QtQmlStatus.READY && !binding.disconnectQmlListenerSwitch.isChecked) {
+            qmlButtonSignalListenerId =
+                mainQmlContent.connectOnClickedListener { _: String, _: Void? ->
+                    Log.i(TAG, "QML button clicked")
+                    binding.kotlinLinear.setBackgroundColor(
+                        Color.parseColor(
+                            colors.getColor()
+                        )
+                    )
+                }
+        }
+        //! [qml signal listener]
+    }
+
+    */
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.menu_main, menu)
@@ -77,5 +100,42 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun fetchNorthernPub(): Thread {
+        return Thread {
+            val url = URL("https://api.openbrewerydb.org/v1/breweries?by_dist=55.380920,-7.373415&per_page=1")
+            val connection = url.openConnection() as HttpsURLConnection
 
+            if(connection.responseCode == 200) {
+                val inputSystem = connection.inputStream
+                Log.d("HERE", inputSystem.toString())
+                val inputStreamReader = InputStreamReader(inputSystem, "UTF-8")
+                val northRequest: List<Request> = Gson().fromJson(inputStreamReader, Array<Request>::class.java).toList()
+                runOnUiThread {
+                    updateUI(northRequest)
+                }
+                inputStreamReader.close()
+                inputSystem.close()
+            } else {
+                binding.northernPub.text = "Failed Connection!"
+            }
+
+        }
+    }
+
+    private fun updateUI(request: List<Request>) {
+
+        kotlin.run {
+            val formatter = DateTimeFormatter.ofPattern("HH:mm:ss dd-MM-yyyy")
+            val current = LocalDateTime.now().format(formatter)
+            binding.lastUpdated.text = "Last Updated: " + current.toString()
+            binding.northernPubName.text = "Name: " + request[0].name
+            binding.northernPubBrewType.text = "Brewery Type: " +request[0].brewery_type
+            binding.northernPubAddress.text = "Address: " + request[0].address_1 + ", " + request[0].address_2 + ", " + request[0].address_3
+            binding.northernPubLatitude.text = "Latitude: " + request[0].latitude
+            binding.northernPubLongitude.text = "Longitude: " + request[0].longitude
+            binding.northernPubPhone.text = "Phone: " + request[0].phone
+            binding.northernPubWebsiteUrl.text = "Website Url: " + request[0].website_url
+
+        }
+    }
 }

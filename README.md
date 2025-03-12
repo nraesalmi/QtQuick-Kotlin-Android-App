@@ -39,4 +39,11 @@ Next I went to https://www.openbrewerydb.org/documentation to study how the API 
 
 Next I found a tutorial video on how to use APIs in Kotlin, also I searched for tips online on how to set up an app that uses XML before diving into QML. I followed the tutorial https://www.youtube.com/watch?v=hurcmk_4QCM&ab_channel=CodeWithCal to get the API working to receive a request for pubs.
 
-Then I begun looking at how to get the QML frontend working. 
+Then I begun looking at how to get the QML frontend working. I found a Qt Quick example application qtquickview_kotlin and studied it's mainActivity structure. I then integrated the lines inside its onCreate() into my own project and moved the xml contents into activity_main.xml and followed a similar structure that was implemented in the example application. After that I received an error:
+```android.view.ViewRootImpl$CalledFromWrongThreadException: Only the original thread that created a view hierarchy can touch its views. Expected: main Calling: Thread-3
+at android.view.ViewRootImpl.checkThread(ViewRootImpl.java:9994)
+at android.view.ViewRootImpl.requestLayout(ViewRootImpl.java:2082)```
+
+and found a solution from https://stackoverflow.com/questions/5161951/android-only-the-original-thread-that-created-a-view-hierarchy-can-touch-its-vi, I had to use runOnUiThread{} when updating UI elements.
+
+After this I got the Tutorial implementation working with QML
