@@ -36,3 +36,7 @@ Next I went to https://www.openbrewerydb.org/documentation to study how the API 
 - Pub with the longest name cannot be fetched with a single API call, as `curl -X GET https://api.openbrewerydb.org/v1/breweries/meta?by_country=ireland` returns `{"total":"70","page":"1","per_page":"50"}`, so two calls need to be made:
     - `curl -X GET "https://api.openbrewerydb.org/v1/breweries?by_country=Ireland&per_page=50&page=1"`
     - `curl -X GET "https://api.openbrewerydb.org/v1/breweries?by_country=Ireland&per_page=50&page=2"`
+
+Next I found a tutorial video on how to use APIs in Kotlin, also I searched for tips online on how to set up an app that uses XML before diving into QML. I followed the tutorial https://www.youtube.com/watch?v=hurcmk_4QCM&ab_channel=CodeWithCal to get the API working to receive a request for pubs.
+
+Then I begun looking at how to get the QML frontend working. 
