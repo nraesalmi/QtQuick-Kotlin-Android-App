@@ -37,7 +37,7 @@ Next I went to https://www.openbrewerydb.org/documentation to study how the API 
     - `curl -X GET "https://api.openbrewerydb.org/v1/breweries?by_country=Ireland&per_page=50&page=1"`
     - `curl -X GET "https://api.openbrewerydb.org/v1/breweries?by_country=Ireland&per_page=50&page=2"`
 
-Next I found a tutorial video on how to use APIs in Kotlin, also I searched for tips online on how to set up an app that uses XML before diving into QML. I followed the tutorial https://www.youtube.com/watch?v=hurcmk_4QCM&ab_channel=CodeWithCal to get the API working to receive a request for pubs.
+Next I found a tutorial video on how to use APIs in Kotlin, also I searched for tips online on how to set up an app that uses XML before diving into QML. I followed the tutorial https://www.youtube.com/watch?v=hurcmk_4QCM&ab_channel=CodeWithCal to get the API working to receive a request for pubs. I only needed to convert updateUI's parameters to accept a list instead, as openbrewerydb API returns a list.
 
 Then I begun looking at how to get the QML frontend working. I found a Qt Quick example application qtquickview_kotlin and studied it's mainActivity structure. I then integrated the lines inside its onCreate() into my own project and moved the xml contents into activity_main.xml and followed a similar structure that was implemented in the example application. After that I received an error:
 `android.view.ViewRootImpl$CalledFromWrongThreadException: Only the original thread that created a view hierarchy can touch its views. Expected: main Calling: Thread-3

@@ -51,7 +51,15 @@ class MainActivity : AppCompatActivity() {
         //! [loadContent]
         qtQuickView!!.loadContent(mainQmlContent)
         //! [loadContent]
-        fetchNorthernPub().start()
+
+        // Load Northest pub
+        fetchPub("northern", "https://api.openbrewerydb.org/v1/breweries?by_dist=55.380920,-7.373415&per_page=1").start()
+
+        // Load Southest pub
+        fetchPub("southern", "https://api.openbrewerydb.org/v1/breweries?by_dist=51.461818,-9.417598&per_page=1").start()
+
+        // Find and Load Longest Named pub
+        fetchPub("longestName", "https://api.openbrewerydb.org/v1/breweries?by_country=Ireland&per_page=50&page=1").start()
     }
 
 /*
@@ -100,42 +108,87 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun fetchNorthernPub(): Thread {
+    private fun findLongestName(request: List<Request>): Request {
+        var longestNamedPub = request[0]
+        Log.d("PUBS", request.size.toString())
+        for (pub in request) {
+            if(pub.name.length > longestNamedPub.name.length) {
+                Log.d("PUB", pub.toString())
+                longestNamedPub = pub
+            }
+        }
+        Log.d("LONG", longestNamedPub.toString())
+        return longestNamedPub
+    }
+
+    private fun fetchPub(pub: String, urlString: String): Thread {
         return Thread {
-            val url = URL("https://api.openbrewerydb.org/v1/breweries?by_dist=55.380920,-7.373415&per_page=1")
-            val connection = url.openConnection() as HttpsURLConnection
+            val url = URL(urlString)
+            var connection = url.openConnection() as HttpsURLConnection
 
             if(connection.responseCode == 200) {
-                val inputSystem = connection.inputStream
-                Log.d("HERE", inputSystem.toString())
-                val inputStreamReader = InputStreamReader(inputSystem, "UTF-8")
-                val northRequest: List<Request> = Gson().fromJson(inputStreamReader, Array<Request>::class.java).toList()
+                var inputSystem = connection.inputStream
+                var inputStreamReader = InputStreamReader(inputSystem, "UTF-8")
+                var request: MutableList<Request> =
+                    Gson().fromJson(inputStreamReader, Array<Request>::class.java).toList().toMutableList()
+                if(pub == "longestName") {
+                    val url = URL("https://api.openbrewerydb.org/v1/breweries?by_country=Ireland&per_page=50&page=2")
+                    connection = url.openConnection() as HttpsURLConnection
+                    inputSystem = connection.inputStream
+                    inputStreamReader = InputStreamReader(inputSystem, "UTF-8")
+
+                    request.addAll(Gson().fromJson(inputStreamReader, Array<Request>::class.java).toList())
+
+                    var longestNamedPub = findLongestName(request)
+                    request[0] = longestNamedPub
+                }
+
                 runOnUiThread {
-                    updateUI(northRequest)
+                    updateUI(request, pub)
                 }
                 inputStreamReader.close()
                 inputSystem.close()
             } else {
-                binding.northernPub.text = "Failed Connection!"
+                binding.lastUpdated.text = "Failed Connection!"
             }
 
         }
     }
 
-    private fun updateUI(request: List<Request>) {
+
+
+    private fun updateUI(request: List<Request>, pub: String) {
 
         kotlin.run {
             val formatter = DateTimeFormatter.ofPattern("HH:mm:ss dd-MM-yyyy")
             val current = LocalDateTime.now().format(formatter)
-            binding.lastUpdated.text = "Last Updated: " + current.toString()
-            binding.northernPubName.text = "Name: " + request[0].name
-            binding.northernPubBrewType.text = "Brewery Type: " +request[0].brewery_type
-            binding.northernPubAddress.text = "Address: " + request[0].address_1 + ", " + request[0].address_2 + ", " + request[0].address_3
-            binding.northernPubLatitude.text = "Latitude: " + request[0].latitude
-            binding.northernPubLongitude.text = "Longitude: " + request[0].longitude
-            binding.northernPubPhone.text = "Phone: " + request[0].phone
-            binding.northernPubWebsiteUrl.text = "Website Url: " + request[0].website_url
 
+            if(pub == "northern") {
+                binding.lastUpdated.text = "Last Updated: " + current.toString()
+                binding.northernPubName.text = "Name: " + request[0].name
+                binding.northernPubBrewType.text = "Brewery Type: " +request[0].brewery_type
+                binding.northernPubAddress.text = "Address: " + request[0].address_1 + ", " + request[0].address_2 + ", " + request[0].address_3
+                binding.northernPubLatitude.text = "Latitude: " + (request[0].latitude ?: "not available")
+                binding.northernPubLongitude.text = "Longitude: " + (request[0].longitude ?: "not available")
+                binding.northernPubPhone.text = "Phone: " + (request[0].phone ?: "not available")
+                binding.northernPubWebsiteUrl.text = "Website Url: " + (request[0].website_url ?: "not available")
+            } else if(pub == "southern") {
+                binding.southernPubName.text = "Name: " + request[0].name
+                binding.southernPubBrewType.text = "Brewery Type: " +request[0].brewery_type
+                binding.southernPubAddress.text = "Address: " + request[0].address_1 + ", " + request[0].address_2 + ", " + request[0].address_3
+                binding.southernPubLatitude.text = "Latitude: " + (request[0].latitude ?: "not available")
+                binding.southernPubLongitude.text = "Longitude: " + (request[0].longitude ?: "not available")
+                binding.southernPubPhone.text = "Phone: " + (request[0].phone ?: "not available")
+                binding.southernPubWebsiteUrl.text = "Website Url: " + (request[0].website_url ?: "not available")
+            } else if(pub == "longestName") {
+                binding.longestNamePubName.text = "Name: " + request[0].name
+                binding.longestNamePubBrewType.text = "Brewery Type: " +request[0].brewery_type
+                binding.longestNamePubAddress.text = "Address: " + request[0].address_1 + ", " + request[0].address_2 + ", " + request[0].address_3
+                binding.longestNamePubLatitude.text = "Latitude: " + (request[0].latitude ?: "not available")
+                binding.longestNamePubLongitude.text = "Longitude: " + (request[0].longitude ?: "not available")
+                binding.longestNamePubPhone.text = "Phone: " + (request[0].phone ?: "not available")
+                binding.longestNamePubWebsiteUrl.text = "Website Url: " + (request[0].website_url ?: "not available")
+            }
         }
     }
 }
