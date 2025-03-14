@@ -1,10 +1,7 @@
 package com.example.breweryfinder
 
-import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
-import android.view.Menu
-import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
@@ -23,7 +20,6 @@ import javax.net.ssl.HttpsURLConnection
 
 
 class MainActivity : AppCompatActivity(), View.OnClickListener {
-
 
     private lateinit var binding: ActivityMainBinding
     private var qtQuickView: QtQuickView? = null
@@ -45,6 +41,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
         )
 
+        // calls runFetchPubs() and starts fetchnumOfPubs()
         findViewById<Button>(R.id.updateButton).setOnClickListener(this)
 
         binding.qmlFrame.addView(qtQuickView, params)
@@ -54,6 +51,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         qtQuickView!!.loadContent(mainQmlContent)
         //! [loadContent]
 
+        // Once elements in QtQuickView are initialized, calls runFetchPubs() and starts fetchnumOfPubs()
         qtQuickView!!.setStatusChangeListener { status ->
             if (status == QtQmlStatus.READY) {
                 fetchNumOfPubs().start()
@@ -61,22 +59,23 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             }
         }
     }
-    var numOfBarsIreland = "Number of Bars in Ireland: "
 
+    var numOfBarsIreland = "Number of Pubs in Ireland: "
 
+    // Takes list of Requests and finds the one with the longest name
     private fun findLongestName(request: List<Request>): Request {
         var longestNamedPub = request[0]
-        Log.d("PUBS", request.size.toString())
         for (pub in request) {
             if(pub.name.length > longestNamedPub.name.length) {
-                Log.d("PUB", pub.toString())
                 longestNamedPub = pub
             }
         }
-        Log.d("LONG", longestNamedPub.toString())
         return longestNamedPub
     }
 
+    // Takes API call urlString and pub String for determening which pub type to update
+    // if pub is "longestName", make a new API call to get the rest of the pubs and add them to request
+    // next call updateUI in UiThread to update corresponding pub type elements with request[0]
     private fun fetchPub(pub: String, urlString: String): Thread {
         return Thread {
             val url = URL(urlString)
@@ -110,6 +109,9 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
+    // Creates API call to get metadata of pubs in Ireland
+    // Takes value of first element (total) from received Object into numOfBars
+    // Updates public var numOfBarsIreland
     private fun fetchNumOfPubs(): Thread {
         return Thread {
             val numUrl = URL("https://api.openbrewerydb.org/v1/breweries/meta?by_country=ireland")
@@ -121,7 +123,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                 val numOfBars =
                     Gson().fromJson(numInputStreamReader, Map::class.java).values.first()
                 Log.d("NUM", numOfBars.toString())
-                numOfBarsIreland = "Number of Bars in Ireland: " + numOfBars
+                numOfBarsIreland = "Number of Pubs in Ireland: " + numOfBars
 
                 numInputStreamReader.close()
                 numInputSystem.close()
@@ -131,6 +133,8 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
+    // Calls fetchPub with the pub type and API call as parameters
+    // starts thread executions
     private fun runFetchPubs() {
         fetchPub(
             "northern",
@@ -148,13 +152,16 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             "https://api.openbrewerydb.org/v1/breweries?by_country=Ireland&per_page=50&page=1"
         ).start()
 
+        // Load Random Pub
         fetchPub(
             "random",
             "https://api.openbrewerydb.org/v1/breweries/random?by_state=ireland"
         ).start()
-
     }
 
+    // Updates Kotlin elements lastUpdated and numOfBars
+    // checks which pub type to add the data in List<Request> using pub String
+    // updates corresponding QML properties by adding request data
     private fun updateUI(request: List<Request>, pub: String) {
         kotlin.run {
             val formatter = DateTimeFormatter.ofPattern("HH:mm:ss dd.MM.yyyy")
@@ -162,7 +169,9 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             binding.lastUpdated.text = "Last Updated: " + current.toString()
             binding.numOfBars.text = numOfBarsIreland
 
+
             if(pub == "northern") {
+                // Update Most Northern Pub data
                 qtQuickView?.setProperty("northPubName", request[0].name)
                 qtQuickView?.setProperty("northBreweryType", request[0].brewery_type)
                 qtQuickView?.setProperty("northAddress", listOfNotNull(
@@ -175,6 +184,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                 qtQuickView?.setProperty("northPhone", request[0].phone ?: "not available")
                 qtQuickView?.setProperty("northWebsite", request[0].website_url ?: "not available")
             } else if(pub == "southern") {
+                // Update Most Southern Pub data
                 qtQuickView?.setProperty("southPubName", request[0].name)
                 qtQuickView?.setProperty("southBreweryType", request[0].brewery_type)
                 qtQuickView?.setProperty("southAddress", listOfNotNull(
@@ -187,6 +197,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                 qtQuickView?.setProperty("southPhone", request[0].phone ?: "not available")
                 qtQuickView?.setProperty("southWebsite", request[0].website_url ?: "not available")
             } else if (pub == "longestName"){
+                // Update Data of Longest Named Pub
                 qtQuickView?.setProperty("longPubName", request[0].name)
                 qtQuickView?.setProperty("longBreweryType", request[0].brewery_type)
                 qtQuickView?.setProperty("longAddress", listOfNotNull(
@@ -199,6 +210,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                 qtQuickView?.setProperty("longPhone", request[0].phone ?: "not available")
                 qtQuickView?.setProperty("longWebsite", request[0].website_url ?: "not available")
             } else {
+                // Update Random Pub Data
                 qtQuickView?.setProperty("randomPubName", request[0].name)
                 qtQuickView?.setProperty("randomBreweryType", request[0].brewery_type)
                 qtQuickView?.setProperty("randomAddress", listOfNotNull(
@@ -214,6 +226,9 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
         }
     }
 
+    // Clicking the button in the Kotlin view:
+    // - Starts fetchNumOfPubs() Thread to fetch number of pubs metadata with API call
+    // - calls runFetchPubs() that fetches data for all pub types
     override fun onClick(v: View?) {
         fetchNumOfPubs().start()
         runFetchPubs()
