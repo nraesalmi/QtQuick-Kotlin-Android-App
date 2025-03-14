@@ -32,20 +32,23 @@ Rectangle {
     property string longPhone: loading
     property string longWebsite: loading
 
+    property string randomPubName: loading
+    property string randomBreweryType: loading
+    property string randomAddress: loading
+    property string randomLatitude: loading
+    property string randomLongitude: loading
+    property string randomPhone: loading
+    property string randomWebsite: loading
+
     Column {
         anchors.left: parent.left
         anchors.margins: 16
         spacing: 12
 
-        Item {
-            width: 1
-            height: 10
-        }
-
         // Most Northern Pub
         Text {
             id: northernPub
-            text: "Most Northern Pub:"
+            text: "Most Northern Irish Pub:"
             color: "#292929"
             font.pixelSize: 46
             font.bold: true
@@ -100,15 +103,10 @@ Rectangle {
             font.pixelSize: 38
         }
 
-        Item {
-            width: 1
-            height: 10
-        }
-
-        // Most Southern Pub
+        // Most Southern Irish Pub
         Text {
             id: southernPub
-            text: "Most Southern Pub:"
+            text: "Most Southern Irish Pub:"
             color: "#292929"
             font.pixelSize: 46
             font.bold: true
@@ -163,15 +161,10 @@ Rectangle {
             font.pixelSize: 38
         }
 
-        Item {
-            width: 1
-            height: 10
-        }
-
         // Longest Named Pub
         Text {
             id: longestNamePub
-            text: "Pub with the Longest Name:"
+            text: "Pub with the Longest Name in Ireland:"
             color: "#292929"
             font.pixelSize: 46
             font.bold: true
@@ -222,6 +215,64 @@ Rectangle {
         Text {
             id: longestNameWebsite
             text: "Website Url: " + longWebsite
+            color: "#292929"
+            font.pixelSize: 38
+        }
+
+        // Random Pub
+        Text {
+            id: randomPub
+            text: "Random Pub in Ireland:"
+            color: "#292929"
+            font.pixelSize: 46
+            font.bold: true
+        }
+
+        Text {
+            id: randomName
+            text: "Name: " + randomPubName
+            color: "#292929"
+            font.pixelSize: 38
+        }
+
+        Text {
+            id: randomType
+            text: "Brewery Type: " + randomBreweryType
+            color: "#292929"
+            font.pixelSize: 38
+        }
+
+        Text {
+            id: randomAddressText
+            text: "Address: " + randomAddress
+            color: "#292929"
+            font.pixelSize: 38
+        }
+
+        Text {
+            id: randomLatitudeText
+            text: "Latitude: " + randomLatitude
+            color: "#292929"
+            font.pixelSize: 38
+        }
+
+        Text {
+            id: randomLongitudeText
+            text: "Longitude: " + randomLongitude
+            color: "#292929"
+            font.pixelSize: 38
+        }
+
+        Text {
+            id: randomPhoneText
+            text: "Phone: " + randomPhone
+            color: "#292929"
+            font.pixelSize: 38
+        }
+
+        Text {
+            id: randomWebsiteText
+            text: "Website Url: " + randomWebsite
             color: "#292929"
             font.pixelSize: 38
         }

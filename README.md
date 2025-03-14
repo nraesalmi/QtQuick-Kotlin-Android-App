@@ -40,10 +40,24 @@ Next I went to https://www.openbrewerydb.org/documentation to study how the API 
 Next I found a tutorial video on how to use APIs in Kotlin, also I searched for tips online on how to set up an app that uses XML before diving into QML. I followed the tutorial https://www.youtube.com/watch?v=hurcmk_4QCM&ab_channel=CodeWithCal to get the API working to receive a request for pubs. I only needed to convert updateUI's parameters to accept a list instead, as openbrewerydb API returns a list.
 
 Then I begun looking at how to get the QML frontend working. I found a Qt Quick example application qtquickview_kotlin and studied it's mainActivity structure. I then integrated the lines inside its onCreate() into my own project and moved the xml contents into activity_main.xml and followed a similar structure that was implemented in the example application. After that I received an error:
-`android.view.ViewRootImpl$CalledFromWrongThreadException: Only the original thread that created a view hierarchy can touch its views. Expected: main Calling: Thread-3
-at android.view.ViewRootImpl.checkThread(ViewRootImpl.java:9994)
-at android.view.ViewRootImpl.requestLayout(ViewRootImpl.java:2082)`
+`android.view.ViewRootImpl$CalledFromWrongThreadException: Only the original thread that created a view hierarchy can touch its views. Expected: main Calling: Thread-3 at android.view.ViewRootImpl.checkThrea (ViewRootImpl.java:9994) at android.view.ViewRootImpl.requestLayout(ViewRootImpl.java:2082)`
 
-and found a solution from https://stackoverflow.com/questions/5161951/android-only-the-original-thread-that-created-a-view-hierarchy-can-touch-its-vi, I had to use runOnUiThread{} when updating UI elements.
+and found a solution from https://stackoverflow.com/questions/5161951/android-only-the-original-thread-that-created-a-view-hierarchy-can-touch-its-vi, I had to use `runOnUiThread{}` when updating UI elements.
 
-After this I got the Tutorial implementation working with QML
+After this I got the Tutorial implementation working with Kotlin
+
+As i was implementing the longest named pub, I loop through all the elements in the list and compare the lengths of their names, and at the end I get only one pub. I wanted to make the API call return only one element instead of a list, so from https://kotlinlang.org/docs/collection-elements.html I found out that using .first() gets the first element of the list.
+
+https://kotlinlang.org/docs/collection-write.html#adding-elements add all elements of a list
+
+
+`No interface with className org/qtproject/qt/android/QtAccessibilityInterface has been registered.Cannot set property northernPubName because QtQuickView is not loaded or ready yet.`
+
+
+I tried
+https://doc.qt.io/qt-6/qml-qtqml-component.html `Component.onCompleted:`
+
+
+But ended up using https://doc.qt.io/qt-6/qquickview.html `QQuickView setStatusChangeListener` and listening when `status == QtQmlStatus.READY`
+
+com.google.gson.JsonSyntaxException: java.lang.IllegalStateException: Expected BEGIN_ARRAY but was BEGIN_OBJECT at line 1 column 2 path $ in fetchNumOfPubs()

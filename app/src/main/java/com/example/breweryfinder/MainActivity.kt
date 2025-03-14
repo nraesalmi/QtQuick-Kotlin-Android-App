@@ -5,7 +5,9 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
 import com.example.breweryfinder.databinding.ActivityMainBinding
@@ -20,7 +22,7 @@ import java.time.format.DateTimeFormatter
 import javax.net.ssl.HttpsURLConnection
 
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), View.OnClickListener {
 
 
     private lateinit var binding: ActivityMainBinding
@@ -42,52 +44,25 @@ class MainActivity : AppCompatActivity() {
         val params: ViewGroup.LayoutParams = FrameLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
         )
+
+        findViewById<Button>(R.id.updateButton).setOnClickListener(this)
+
         binding.qmlFrame.addView(qtQuickView, params)
 
         //! [layoutParams]
         //! [loadContent]
         qtQuickView!!.loadContent(mainQmlContent)
         //! [loadContent]
+
         qtQuickView!!.setStatusChangeListener { status ->
             if (status == QtQmlStatus.READY) {
-                // Load Northest pub
-                fetchPub(
-                    "northern",
-                    "https://api.openbrewerydb.org/v1/breweries?by_dist=55.380920,-7.373415&per_page=1"
-                ).start()
-                // Load Southest pub
-                fetchPub(
-                    "southern",
-                    "https://api.openbrewerydb.org/v1/breweries?by_dist=51.461818,-9.417598&per_page=1"
-                ).start()
-
-                // Find and Load Longest Named pub
-                fetchPub(
-                    "longestName",
-                    "https://api.openbrewerydb.org/v1/breweries?by_country=Ireland&per_page=50&page=1"
-                ).start()
+                fetchNumOfPubs().start()
+                runFetchPubs()
             }
         }
-
-
-        }
-
-
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        menuInflater.inflate(R.menu.menu_main, menu)
-        return true
     }
+    var numOfBarsIreland = "Number of Bars in Ireland: "
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        return when (item.itemId) {
-            R.id.action_settings -> true
-            else -> super.onOptionsItemSelected(item)
-        }
-    }
 
     private fun findLongestName(request: List<Request>): Request {
         var longestNamedPub = request[0]
@@ -135,16 +110,66 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun fetchNumOfPubs(): Thread {
+        return Thread {
+            val numUrl = URL("https://api.openbrewerydb.org/v1/breweries/meta?by_country=ireland")
+            val numConnection = numUrl.openConnection() as HttpsURLConnection
+
+            if (numConnection.responseCode == 200) {
+                val numInputSystem = numConnection.inputStream
+                val numInputStreamReader = InputStreamReader(numInputSystem, "UTF-8")
+                val numOfBars =
+                    Gson().fromJson(numInputStreamReader, Map::class.java).values.first()
+                Log.d("NUM", numOfBars.toString())
+                numOfBarsIreland = "Number of Bars in Ireland: " + numOfBars
+
+                numInputStreamReader.close()
+                numInputSystem.close()
+            } else {
+                numOfBarsIreland = "not found"
+            }
+        }
+    }
+
+    private fun runFetchPubs() {
+        fetchPub(
+            "northern",
+            "https://api.openbrewerydb.org/v1/breweries?by_dist=55.380920,-7.373415&per_page=1"
+        ).start()
+        // Load Southest pub
+        fetchPub(
+            "southern",
+            "https://api.openbrewerydb.org/v1/breweries?by_dist=51.461818,-9.417598&per_page=1"
+        ).start()
+
+        // Find and Load Longest Named pub
+        fetchPub(
+            "longestName",
+            "https://api.openbrewerydb.org/v1/breweries?by_country=Ireland&per_page=50&page=1"
+        ).start()
+
+        fetchPub(
+            "random",
+            "https://api.openbrewerydb.org/v1/breweries/random?by_state=ireland"
+        ).start()
+
+    }
+
     private fun updateUI(request: List<Request>, pub: String) {
         kotlin.run {
-            val formatter = DateTimeFormatter.ofPattern("HH:mm:ss dd-MM-yyyy")
+            val formatter = DateTimeFormatter.ofPattern("HH:mm:ss dd.MM.yyyy")
             val current = LocalDateTime.now().format(formatter)
             binding.lastUpdated.text = "Last Updated: " + current.toString()
+            binding.numOfBars.text = numOfBarsIreland
 
             if(pub == "northern") {
                 qtQuickView?.setProperty("northPubName", request[0].name)
                 qtQuickView?.setProperty("northBreweryType", request[0].brewery_type)
-                qtQuickView?.setProperty("northAddress", request[0].address_1 + ", " + request[0].address_2 + ", " + request[0].address_3)
+                qtQuickView?.setProperty("northAddress", listOfNotNull(
+                    request[0].address_1,
+                    request[0].address_2,
+                    request[0].address_3
+                ).takeIf { it.isNotEmpty() }?.joinToString(", ") ?: "not available")
                 qtQuickView?.setProperty("northLatitude", request[0].latitude ?: "not available")
                 qtQuickView?.setProperty("northLongitude", request[0].longitude ?: "not available")
                 qtQuickView?.setProperty("northPhone", request[0].phone ?: "not available")
@@ -152,20 +177,45 @@ class MainActivity : AppCompatActivity() {
             } else if(pub == "southern") {
                 qtQuickView?.setProperty("southPubName", request[0].name)
                 qtQuickView?.setProperty("southBreweryType", request[0].brewery_type)
-                qtQuickView?.setProperty("southAddress", request[0].address_1 + ", " + request[0].address_2 + ", " + request[0].address_3)
+                qtQuickView?.setProperty("southAddress", listOfNotNull(
+                    request[0].address_1,
+                    request[0].address_2,
+                    request[0].address_3
+                ).takeIf { it.isNotEmpty() }?.joinToString(", ") ?: "not available")
                 qtQuickView?.setProperty("southLatitude", request[0].latitude ?: "not available")
                 qtQuickView?.setProperty("southLongitude", request[0].longitude ?: "not available")
                 qtQuickView?.setProperty("southPhone", request[0].phone ?: "not available")
                 qtQuickView?.setProperty("southWebsite", request[0].website_url ?: "not available")
-            } else {
+            } else if (pub == "longestName"){
                 qtQuickView?.setProperty("longPubName", request[0].name)
                 qtQuickView?.setProperty("longBreweryType", request[0].brewery_type)
-                qtQuickView?.setProperty("longAddress", request[0].address_1 + ", " + request[0].address_2 + ", " + request[0].address_3)
+                qtQuickView?.setProperty("longAddress", listOfNotNull(
+                    request[0].address_1,
+                    request[0].address_2,
+                    request[0].address_3
+                ).takeIf { it.isNotEmpty() }?.joinToString(", ") ?: "not available")
                 qtQuickView?.setProperty("longLatitude", request[0].latitude ?: "not available")
                 qtQuickView?.setProperty("longLongitude", request[0].longitude ?: "not available")
                 qtQuickView?.setProperty("longPhone", request[0].phone ?: "not available")
                 qtQuickView?.setProperty("longWebsite", request[0].website_url ?: "not available")
+            } else {
+                qtQuickView?.setProperty("randomPubName", request[0].name)
+                qtQuickView?.setProperty("randomBreweryType", request[0].brewery_type)
+                qtQuickView?.setProperty("randomAddress", listOfNotNull(
+                    request[0].address_1,
+                    request[0].address_2,
+                    request[0].address_3
+                ).takeIf { it.isNotEmpty() }?.joinToString(", ") ?: "not available")
+                qtQuickView?.setProperty("randomLatitude", request[0].latitude ?: "not available")
+                qtQuickView?.setProperty("randomLongitude", request[0].longitude ?: "not available")
+                qtQuickView?.setProperty("randomPhone", request[0].phone ?: "not available")
+                qtQuickView?.setProperty("randomWebsite", request[0].website_url ?: "not available")
             }
         }
+    }
+
+    override fun onClick(v: View?) {
+        fetchNumOfPubs().start()
+        runFetchPubs()
     }
 }

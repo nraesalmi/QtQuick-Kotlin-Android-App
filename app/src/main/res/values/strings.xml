@@ -6,4 +6,5 @@
     <string name="second_fragment_label">Second Fragment</string>
     <string name="update">Update</string>
     <string name="previous">Previous</string>
+    <string name="numOfBars">Number of bars in Ireland:</string>
 </resources>
