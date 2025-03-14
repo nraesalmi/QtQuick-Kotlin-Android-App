@@ -1,6 +1,16 @@
 # Brewery finder
 ### Niklas Raesalmi
-Qt Quick application, uses QML for frontend & Kotlin backend
+Qt Quick application, uses QML + xml for frontend with Kotlin for backend
+
+### Final Demo video
+Brewery Finder running on an Android emulator in Android Studio using Sdk 34
+
+[![DEMO2](https://img.youtube.com/vi/6cFK4ZzCZb4/0.jpg)](https://www.youtube.com/watch?v=6cFK4ZzCZb4)
+
+Brewery Finder running on Oneplus Nord 2 device with Sdk 33
+
+[![DEMO2](https://img.youtube.com/vi/N9pCGLkHnDo/0.jpg)](https://www.youtube.com/watch?v=N9pCGLkHnDo)
+
 
 ## Requirements
 - Open source license
