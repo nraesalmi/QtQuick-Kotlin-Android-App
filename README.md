@@ -11,8 +11,34 @@ Brewery Finder running on Oneplus Nord 2 device with Sdk 33
 
 [![DEMO2](https://img.youtube.com/vi/N9pCGLkHnDo/0.jpg)](https://www.youtube.com/watch?v=N9pCGLkHnDo)
 
+## Features
+- Finds and Displays Breweries in Ireland
 
-## Requirements
+    - Northernmost brewery
+    - Southernmost brewery
+    - Brewery with the longest name
+    - Random brewery
+    - Number of Breweries in Ireland
+    - Time of the last update
+      
+- Tech Stack
+
+    - Frontend: Qt Quick (QML) & XML (Android UI)
+    - Backend: Kotlin (Handles API requests & data processing)
+
+- API Integration
+
+    - Uses Open Brewery DB
+    - Fetches data using by_dist, random, meta queries
+    - Dynamically Updates UI
+
+- QML properties update automatically from Kotlin backend
+
+    - Button allows users to refresh brewery data with new API calls
+
+## Development Process
+
+### Requirements
 - Open source license
 
 - Qt 6.8 (latest that you can get, likely 6.8.1)
@@ -37,7 +63,7 @@ Brewery Finder running on Oneplus Nord 2 device with Sdk 33
 
 - Part of the UI is done with Kotlin, part with QML
 
-## Background Information
+### Background Information
 
 I have previously used Kotlin and Jetpack Compose for Android app development, and had to learn how to use QtQuick and also xml development for the project. 
 I started out by first learning the Qt environment and used Qt Academy to learn QtQuick and QML. I also got interested in using Qt Creator so I studied it too using courses:
@@ -58,9 +84,9 @@ After that I went to https://www.openbrewerydb.org/documentation to study how th
 
 After finding the correct API calls, I used a Qt Quick example application qtquickview_kotlin and studied it's mainActivity and Main.qml structure. At first it seemed confusing but as I started developing it, everything clicked into place quickly.
 
-## Creation Process
+### Creation Process
 
-### Learning xml and API use
+#### Learning xml and API use
 
 First, I wanted to learn how to use Kotlin with xml frontend format, so I ended up following a tutorial video on how to use APIs in Kotlin (https://www.youtube.com/watch?v=hurcmk_4QCM&ab_channel=CodeWithCal), also I searched for tips online on how to set up an app that uses XML before diving into QML. I followed the tutorial to get the API working to receive requests for pubs and display them using xml. As I implemented the API call structure I received an error:
 `android.view.ViewRootImpl$CalledFromWrongThreadException: Only the original thread that created a view hierarchy can touch its views. Expected: main Calling: Thread-3 at android.view.ViewRootImpl.checkThrea (ViewRootImpl.java:9994) at android.view.ViewRootImpl.requestLayout(ViewRootImpl.java:2082)`
@@ -68,7 +94,7 @@ I found a solution from https://stackoverflow.com/questions/5161951/android-only
 
 To get longest named pub, I found from https://kotlinlang.org/docs/collection-write.html#adding-elements how to append elements of a list to another list so I'd have a list of all the pubs in Ireland. To get the longest named pub I decided the best way is to loop through all the Request elements in the list, compare the lengths of their name elements, and swap the pub if a longer name was found. 
 
-### Learning QML
+#### Learning QML
 
 Next I begun looking at how to get the QML frontend working. I started out by watching the tutorial video from https://doc.qt.io/qttoolsforandroid/ to learn how to integrate QtQuick into an Android Studio project. Then I integrated the lines used in the qtquickview_kotlin example inside its onCreate() into my own project with the help of https://doc.qt.io/qt-6/qml-in-android-studio-projects-example.html and translated the frontend xml contents into Main.qml. I got the text elements working but initially had trouble with editing the text elements. By studying the example more I found that I could use string properties to display and edit the API data. After I converted the xml binding edits into setProperty() calls I got an error:
 
@@ -76,7 +102,7 @@ Next I begun looking at how to get the QML frontend working. I started out by wa
 
 As the property elements didn't load fast enough before the Kotlin onCreate() tried accessing them, I tried adding `Component.onCompleted:` into Main.qml from https://doc.qt.io/qt-6/qml-qtqml-component.html but still received the same error. I ended up using https://doc.qt.io/qt-6/qquickview.html `QQuickView setStatusChangeListener` and listening for the change to `QtQmlStatus.READY` before editing the QML property fields. After that I got the calls working but ran into a problem in Main.qml as some properties kept getting an odd HEX value instead of the API call. I eventually realized that I can't have the same string in a Text id and a property, and after changing the values I got all the API calls going through. 
 
-### Adding Kotlin functionality and fine-tuning
+#### Adding Kotlin functionality and fine-tuning
 I wanted to add a button that updates the UI elements by making new API calls, so I first added a field for xml elements into my activity_main.xml above the qmlFrame and added a button there. Then I used findViewById<Button>(R.id.updateButton).setOnClickListener(this) which I found from https://developer.android.com/develop/ui/views/components/button to make it interactable. I added the runFetchPubs() call to the onClick() function to update the data.
 
 I added a text field that tells how many pubs are in Ireland, and to avoid making a structure object for the metadata I wanted to only get the first element of the received object. To make the API call return only one element of an object instead of the whole object I found https://kotlinlang.org/docs/collection-elements.html using .first() gets the first element of the object.
