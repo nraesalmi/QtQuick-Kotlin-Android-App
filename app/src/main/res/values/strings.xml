@@ -6,35 +6,4 @@
     <string name="second_fragment_label">Second Fragment</string>
     <string name="update">Update</string>
     <string name="previous">Previous</string>
-
-    <!-- most northern pub -->
-    <string name="most_northern_pub">Most Northern Pub:</string>
-    <string name="northernPubName">Name:</string>
-    <string name="northernPubBrewType">Brewery Type:</string>
-    <string name="northernPubAddress">Address:</string>
-    <string name="northernPubLongitude">Longitude:</string>
-    <string name="northernPubLatitude">Latitude:</string>
-    <string name="northernPubPhone">Phone:</string>
-    <string name="northernPubWebsiteUrl">Website Url:</string>
-
-    <!-- most southern pub -->
-    <string name="most_southern_pub">Most Southern Pub:</string>
-    <string name="southernPubName">Name:</string>
-    <string name="southernPubBrewType">Brewery Type:</string>
-    <string name="southernPubAddress">Address:</string>
-    <string name="southernPubLongitude">Longitude:</string>
-    <string name="southernPubLatitude">Latitude:</string>
-    <string name="southernPubPhone">Phone:</string>
-    <string name="southernPubWebsiteUrl">Website Url:</string>
-
-    <!-- pub with the longest name -->
-    <string name="longest_name_pub">Pub With the Longest Name:</string>
-    <string name="longestNamePubName">Name:</string>
-    <string name="longestNamePubBrewType">Brewery Type:</string>
-    <string name="longestNamePubAddress">Address:</string>
-    <string name="longestNamePubLongitude">Longitude:</string>
-    <string name="longestNamePubLatitude">Latitude:</string>
-    <string name="longestNamePubPhone">Phone:</string>
-    <string name="longestNamePubWebsiteUrl">Website Url:</string>
-
 </resources>

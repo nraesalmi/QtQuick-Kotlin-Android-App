@@ -1,5 +1,6 @@
 package com.example.breweryfinder
 
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
@@ -10,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.breweryfinder.databinding.ActivityMainBinding
 import com.google.gson.Gson
 import org.qtproject.example.brewery_finder_qtquickApp.Brewery_finder_qtquick.Main
+import org.qtproject.qt.android.QtQmlStatus
 import org.qtproject.qt.android.QtQuickView
 import java.io.InputStreamReader
 import java.net.URL
@@ -36,62 +38,41 @@ class MainActivity : AppCompatActivity() {
         //! [m_qtQuickView]
         qtQuickView = QtQuickView(this)
 
-        // Set status change listener for m_qmlView
-        // listener implemented below in OnStatusChanged
-        //! [setStatusChangeListener]
-        //mainQmlContent.setStatusChangeListener(this)
-
         //! [layoutParams]
         val params: ViewGroup.LayoutParams = FrameLayout.LayoutParams(
             ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT
         )
-        binding.mainLinear.addView(qtQuickView, params)
+        binding.qmlFrame.addView(qtQuickView, params)
 
         //! [layoutParams]
         //! [loadContent]
         qtQuickView!!.loadContent(mainQmlContent)
         //! [loadContent]
+        qtQuickView!!.setStatusChangeListener { status ->
+            if (status == QtQmlStatus.READY) {
+                // Load Northest pub
+                fetchPub(
+                    "northern",
+                    "https://api.openbrewerydb.org/v1/breweries?by_dist=55.380920,-7.373415&per_page=1"
+                ).start()
+                // Load Southest pub
+                fetchPub(
+                    "southern",
+                    "https://api.openbrewerydb.org/v1/breweries?by_dist=51.461818,-9.417598&per_page=1"
+                ).start()
 
-        // Load Northest pub
-        fetchPub("northern", "https://api.openbrewerydb.org/v1/breweries?by_dist=55.380920,-7.373415&per_page=1").start()
-
-        // Load Southest pub
-        fetchPub("southern", "https://api.openbrewerydb.org/v1/breweries?by_dist=51.461818,-9.417598&per_page=1").start()
-
-        // Find and Load Longest Named pub
-        fetchPub("longestName", "https://api.openbrewerydb.org/v1/breweries?by_country=Ireland&per_page=50&page=1").start()
-    }
-
-/*
-    //! [onStatusChanged]
-    override fun onStatusChanged(status: QtQmlStatus?) {
-        Log.v(TAG, "Status of QtQuickView: $status")
-
-
-        val qmlStatus = (resources.getString(R.string.qml_view_status)
-                + m_statusNames[status])
-
-        // Show current QML View status in a textview
-        binding.qmlStatusText.text = qmlStatus
-
-        // Connect signal listener to "onClicked" signal from main.qml
-        // addSignalListener returns int which can be used later to identify the listener
-        //! [qml signal listener]
-        if (status == QtQmlStatus.READY && !binding.disconnectQmlListenerSwitch.isChecked) {
-            qmlButtonSignalListenerId =
-                mainQmlContent.connectOnClickedListener { _: String, _: Void? ->
-                    Log.i(TAG, "QML button clicked")
-                    binding.kotlinLinear.setBackgroundColor(
-                        Color.parseColor(
-                            colors.getColor()
-                        )
-                    )
-                }
+                // Find and Load Longest Named pub
+                fetchPub(
+                    "longestName",
+                    "https://api.openbrewerydb.org/v1/breweries?by_country=Ireland&per_page=50&page=1"
+                ).start()
+            }
         }
-        //! [qml signal listener]
-    }
 
-    */
+
+        }
+
+
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.menu_main, menu)
@@ -151,43 +132,39 @@ class MainActivity : AppCompatActivity() {
             } else {
                 binding.lastUpdated.text = "Failed Connection!"
             }
-
         }
     }
 
-
-
     private fun updateUI(request: List<Request>, pub: String) {
-
         kotlin.run {
             val formatter = DateTimeFormatter.ofPattern("HH:mm:ss dd-MM-yyyy")
             val current = LocalDateTime.now().format(formatter)
+            binding.lastUpdated.text = "Last Updated: " + current.toString()
 
             if(pub == "northern") {
-                binding.lastUpdated.text = "Last Updated: " + current.toString()
-                binding.northernPubName.text = "Name: " + request[0].name
-                binding.northernPubBrewType.text = "Brewery Type: " +request[0].brewery_type
-                binding.northernPubAddress.text = "Address: " + request[0].address_1 + ", " + request[0].address_2 + ", " + request[0].address_3
-                binding.northernPubLatitude.text = "Latitude: " + (request[0].latitude ?: "not available")
-                binding.northernPubLongitude.text = "Longitude: " + (request[0].longitude ?: "not available")
-                binding.northernPubPhone.text = "Phone: " + (request[0].phone ?: "not available")
-                binding.northernPubWebsiteUrl.text = "Website Url: " + (request[0].website_url ?: "not available")
+                qtQuickView?.setProperty("northPubName", request[0].name)
+                qtQuickView?.setProperty("northBreweryType", request[0].brewery_type)
+                qtQuickView?.setProperty("northAddress", request[0].address_1 + ", " + request[0].address_2 + ", " + request[0].address_3)
+                qtQuickView?.setProperty("northLatitude", request[0].latitude ?: "not available")
+                qtQuickView?.setProperty("northLongitude", request[0].longitude ?: "not available")
+                qtQuickView?.setProperty("northPhone", request[0].phone ?: "not available")
+                qtQuickView?.setProperty("northWebsite", request[0].website_url ?: "not available")
             } else if(pub == "southern") {
-                binding.southernPubName.text = "Name: " + request[0].name
-                binding.southernPubBrewType.text = "Brewery Type: " +request[0].brewery_type
-                binding.southernPubAddress.text = "Address: " + request[0].address_1 + ", " + request[0].address_2 + ", " + request[0].address_3
-                binding.southernPubLatitude.text = "Latitude: " + (request[0].latitude ?: "not available")
-                binding.southernPubLongitude.text = "Longitude: " + (request[0].longitude ?: "not available")
-                binding.southernPubPhone.text = "Phone: " + (request[0].phone ?: "not available")
-                binding.southernPubWebsiteUrl.text = "Website Url: " + (request[0].website_url ?: "not available")
-            } else if(pub == "longestName") {
-                binding.longestNamePubName.text = "Name: " + request[0].name
-                binding.longestNamePubBrewType.text = "Brewery Type: " +request[0].brewery_type
-                binding.longestNamePubAddress.text = "Address: " + request[0].address_1 + ", " + request[0].address_2 + ", " + request[0].address_3
-                binding.longestNamePubLatitude.text = "Latitude: " + (request[0].latitude ?: "not available")
-                binding.longestNamePubLongitude.text = "Longitude: " + (request[0].longitude ?: "not available")
-                binding.longestNamePubPhone.text = "Phone: " + (request[0].phone ?: "not available")
-                binding.longestNamePubWebsiteUrl.text = "Website Url: " + (request[0].website_url ?: "not available")
+                qtQuickView?.setProperty("southPubName", request[0].name)
+                qtQuickView?.setProperty("southBreweryType", request[0].brewery_type)
+                qtQuickView?.setProperty("southAddress", request[0].address_1 + ", " + request[0].address_2 + ", " + request[0].address_3)
+                qtQuickView?.setProperty("southLatitude", request[0].latitude ?: "not available")
+                qtQuickView?.setProperty("southLongitude", request[0].longitude ?: "not available")
+                qtQuickView?.setProperty("southPhone", request[0].phone ?: "not available")
+                qtQuickView?.setProperty("southWebsite", request[0].website_url ?: "not available")
+            } else {
+                qtQuickView?.setProperty("longPubName", request[0].name)
+                qtQuickView?.setProperty("longBreweryType", request[0].brewery_type)
+                qtQuickView?.setProperty("longAddress", request[0].address_1 + ", " + request[0].address_2 + ", " + request[0].address_3)
+                qtQuickView?.setProperty("longLatitude", request[0].latitude ?: "not available")
+                qtQuickView?.setProperty("longLongitude", request[0].longitude ?: "not available")
+                qtQuickView?.setProperty("longPhone", request[0].phone ?: "not available")
+                qtQuickView?.setProperty("longWebsite", request[0].website_url ?: "not available")
             }
         }
     }
