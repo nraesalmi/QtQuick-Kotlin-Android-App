@@ -86,7 +86,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
                 var inputStreamReader = InputStreamReader(inputSystem, "UTF-8")
                 var request: MutableList<Request> =
                     Gson().fromJson(inputStreamReader, Array<Request>::class.java).toList().toMutableList()
-                if(pub == "longestName") {
+                if(pub == "long") {
                     val url = URL("https://api.openbrewerydb.org/v1/breweries?by_country=Ireland&per_page=50&page=2")
                     connection = url.openConnection() as HttpsURLConnection
                     inputSystem = connection.inputStream
@@ -137,18 +137,19 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
     // starts thread executions
     private fun runFetchPubs() {
         fetchPub(
-            "northern",
+            "north",
             "https://api.openbrewerydb.org/v1/breweries?by_dist=55.380920,-7.373415&per_page=1"
         ).start()
+
         // Load Southest pub
         fetchPub(
-            "southern",
+            "south",
             "https://api.openbrewerydb.org/v1/breweries?by_dist=51.461818,-9.417598&per_page=1"
         ).start()
 
         // Find and Load Longest Named pub
         fetchPub(
-            "longestName",
+            "long",
             "https://api.openbrewerydb.org/v1/breweries?by_country=Ireland&per_page=50&page=1"
         ).start()
 
@@ -169,60 +170,18 @@ class MainActivity : AppCompatActivity(), View.OnClickListener {
             binding.lastUpdated.text = "Last Updated: " + current.toString()
             binding.numOfBars.text = numOfBarsIreland
 
-
-            if(pub == "northern") {
-                // Update Most Northern Pub data
-                qtQuickView?.setProperty("northPubName", request[0].name)
-                qtQuickView?.setProperty("northBreweryType", request[0].brewery_type)
-                qtQuickView?.setProperty("northAddress", listOfNotNull(
-                    request[0].address_1,
-                    request[0].address_2,
-                    request[0].address_3
-                ).takeIf { it.isNotEmpty() }?.joinToString(", ") ?: "not available")
-                qtQuickView?.setProperty("northLatitude", request[0].latitude ?: "not available")
-                qtQuickView?.setProperty("northLongitude", request[0].longitude ?: "not available")
-                qtQuickView?.setProperty("northPhone", request[0].phone ?: "not available")
-                qtQuickView?.setProperty("northWebsite", request[0].website_url ?: "not available")
-            } else if(pub == "southern") {
-                // Update Most Southern Pub data
-                qtQuickView?.setProperty("southPubName", request[0].name)
-                qtQuickView?.setProperty("southBreweryType", request[0].brewery_type)
-                qtQuickView?.setProperty("southAddress", listOfNotNull(
-                    request[0].address_1,
-                    request[0].address_2,
-                    request[0].address_3
-                ).takeIf { it.isNotEmpty() }?.joinToString(", ") ?: "not available")
-                qtQuickView?.setProperty("southLatitude", request[0].latitude ?: "not available")
-                qtQuickView?.setProperty("southLongitude", request[0].longitude ?: "not available")
-                qtQuickView?.setProperty("southPhone", request[0].phone ?: "not available")
-                qtQuickView?.setProperty("southWebsite", request[0].website_url ?: "not available")
-            } else if (pub == "longestName"){
-                // Update Data of Longest Named Pub
-                qtQuickView?.setProperty("longPubName", request[0].name)
-                qtQuickView?.setProperty("longBreweryType", request[0].brewery_type)
-                qtQuickView?.setProperty("longAddress", listOfNotNull(
-                    request[0].address_1,
-                    request[0].address_2,
-                    request[0].address_3
-                ).takeIf { it.isNotEmpty() }?.joinToString(", ") ?: "not available")
-                qtQuickView?.setProperty("longLatitude", request[0].latitude ?: "not available")
-                qtQuickView?.setProperty("longLongitude", request[0].longitude ?: "not available")
-                qtQuickView?.setProperty("longPhone", request[0].phone ?: "not available")
-                qtQuickView?.setProperty("longWebsite", request[0].website_url ?: "not available")
-            } else {
-                // Update Random Pub Data
-                qtQuickView?.setProperty("randomPubName", request[0].name)
-                qtQuickView?.setProperty("randomBreweryType", request[0].brewery_type)
-                qtQuickView?.setProperty("randomAddress", listOfNotNull(
-                    request[0].address_1,
-                    request[0].address_2,
-                    request[0].address_3
-                ).takeIf { it.isNotEmpty() }?.joinToString(", ") ?: "not available")
-                qtQuickView?.setProperty("randomLatitude", request[0].latitude ?: "not available")
-                qtQuickView?.setProperty("randomLongitude", request[0].longitude ?: "not available")
-                qtQuickView?.setProperty("randomPhone", request[0].phone ?: "not available")
-                qtQuickView?.setProperty("randomWebsite", request[0].website_url ?: "not available")
-            }
+            // Update Pub data
+            qtQuickView?.setProperty(pub + "PubName", request[0].name)
+            qtQuickView?.setProperty(pub + "BreweryType", request[0].brewery_type)
+            qtQuickView?.setProperty(pub + "Address", listOfNotNull(
+                request[0].address_1,
+                request[0].address_2,
+                request[0].address_3
+            ).takeIf { it.isNotEmpty() }?.joinToString(", ") ?: "not available")
+            qtQuickView?.setProperty(pub + "Latitude", request[0].latitude ?: "not available")
+            qtQuickView?.setProperty(pub + "Longitude", request[0].longitude ?: "not available")
+            qtQuickView?.setProperty(pub + "Phone", request[0].phone ?: "not available")
+            qtQuickView?.setProperty(pub + "Website", request[0].website_url ?: "not available")
         }
     }
 
